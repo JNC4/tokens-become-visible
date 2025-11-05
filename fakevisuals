@@ -1,0 +1,134 @@
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+
+response = "Batch-invariant kernels eliminate inference nondeterminism by fixing reduction strategies. Essential for reproducibility, enables true on-policy RL, critical for AI safety research."
+
+words = response.replace(',', ' ,').replace('.', ' .').split()
+print(f"Response ({len(words)} tokens): {response}")
+
+# Create visualization showing how this would look with probability alternatives
+# Simulating what the image shows - main path + alternative tokens with probabilities
+
+fig, ax = plt.subplots(figsize=(20, 8))
+
+# Token data with simulated alternatives for demonstration
+tokens_with_alts = [
+    {"text": "Batch-invariant", "x": 0, "y": 0, "alts": [
+        {"text": "Deterministic", "prob": 0.15, "color": "#FF7F50"}
+    ]},
+    {"text": "kernels", "x": 1, "y": 0},
+    {"text": "eliminate", "x": 2, "y": 0, "alts": [
+        {"text": "prevent", "prob": 0.22, "color": "#FF7F50"},
+        {"text": "solve", "prob": 0.18, "color": "#FF7F50"}
+    ]},
+    {"text": "inference", "x": 3, "y": 0},
+    {"text": "nondeterminism", "x": 4, "y": 0},
+    {"text": "by", "x": 5, "y": 0},
+    {"text": "fixing", "x": 6, "y": 0, "alts": [
+        {"text": "enforcing", "prob": 0.12, "color": "#FF7F50"}
+    ]},
+    {"text": "reduction", "x": 7, "y": 0},
+    {"text": "strategies", "x": 8, "y": 0, "alts": [
+        {"text": "orders", "prob": 0.25, "color": "#FF7F50"}
+    ]},
+    {"text": ".", "x": 9, "y": 0},
+    
+    {"text": "Essential", "x": 0, "y": 1, "alts": [
+        {"text": "Critical", "prob": 0.28, "color": "#4682B4"},
+        {"text": "Vital", "prob": 0.08, "color": "#4682B4"}
+    ]},
+    {"text": "for", "x": 1, "y": 1},
+    {"text": "reproducibility", "x": 2, "y": 1, "alts": [
+        {"text": "repeatability", "prob": 0.19, "color": "#4682B4"}
+    ]},
+    {"text": ",", "x": 3, "y": 1},
+    {"text": "enables", "x": 4, "y": 1},
+    {"text": "true", "x": 5, "y": 1},
+    {"text": "on-policy", "x": 6, "y": 1},
+    {"text": "RL", "x": 7, "y": 1},
+    {"text": ",", "x": 8, "y": 1},
+    
+    {"text": "critical", "x": 0, "y": 2, "alts": [
+        {"text": "important", "prob": 0.31, "color": "#9370DB"}
+    ]},
+    {"text": "for", "x": 1, "y": 2},
+    {"text": "AI", "x": 2, "y": 2},
+    {"text": "safety", "x": 3, "y": 2},
+    {"text": "research", "x": 4, "y": 2, "alts": [
+        {"text": "work", "prob": 0.14, "color": "#9370DB"}
+    ]},
+    {"text": ".", "x": 5, "y": 2},
+]
+
+# Draw tokens
+for token in tokens_with_alts:
+    # Main token box
+    rect = mpatches.FancyBboxPatch(
+        (token["x"] * 1.8, -token["y"] * 2.2),
+        1.4, 0.7,
+        boxstyle="round,pad=0.06",
+        linewidth=2,
+        edgecolor='#666666',
+        facecolor='white'
+    )
+    ax.add_patch(rect)
+    ax.text(token["x"] * 1.8 + 0.7, -token["y"] * 2.2 + 0.35, 
+            token["text"], 
+            ha='center', va='center', fontsize=13, fontweight='normal')
+    
+    # Alternative tokens
+    if "alts" in token:
+        for i, alt in enumerate(token["alts"]):
+            # Determine position based on row
+            if token["y"] == 2:  # Bottom row - all go underneath
+                alt_y = -token["y"] * 2.2 - 1.0 - (i * 1.0)
+                prob_offset = -0.15  # Probability goes below
+            elif token["y"] == 1:  # Middle row - first underneath, second on top
+                if i == 0:
+                    alt_y = -token["y"] * 2.2 - 1.0
+                    prob_offset = -0.15
+                else:
+                    alt_y = -token["y"] * 2.2 + 1.0 + ((i-1) * 1.0)
+                    prob_offset = 0.85
+            else:  # Top row - all go on top (original behavior)
+                alt_y = -token["y"] * 2.2 + 1.0 + (i * 1.0)
+                prob_offset = 0.85
+            
+            # Alternative box
+            alt_rect = mpatches.FancyBboxPatch(
+                (token["x"] * 1.8, alt_y),
+                1.4, 0.7,
+                boxstyle="round,pad=0.06",
+                linewidth=2,
+                edgecolor=alt["color"],
+                facecolor='white'
+            )
+            ax.add_patch(alt_rect)
+            
+            # Alternative text
+            ax.text(token["x"] * 1.8 + 0.7, alt_y + 0.35, 
+                    alt["text"], 
+                    ha='center', va='center', 
+                    fontsize=12, color=alt["color"], fontweight='normal')
+            
+            # Probability percentage
+            prob_text = f'{int(alt["prob"]*100)}%'
+            ax.text(token["x"] * 1.8 + 0.7, alt_y + prob_offset, 
+                    prob_text, 
+                    ha='center', va='bottom' if prob_offset > 0 else 'top', 
+                    fontsize=10, color=alt["color"], fontweight='bold')
+
+ax.set_xlim(-0.5, 18)
+ax.set_ylim(-5.5, 4.5)
+ax.axis('off')
+
+# Add title
+ax.text(17, 4, 'Claude Sonnet 4, temperature=0', 
+        ha='right', va='top', fontsize=12, color='#888888', style='italic')
+
+plt.tight_layout()
+plt.savefig('/mnt/user-data/outputs/basis_presentation_tokens.png', 
+            dpi=300, bbox_inches='tight', facecolor='white', pad_inches=0.3)
+print("✓ Visualization created!")
+print(f"\nActual response: {response}")
+print(f"Token count: {len(words)}")
